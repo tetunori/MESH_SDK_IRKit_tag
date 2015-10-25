@@ -36,16 +36,16 @@ on MESH application. Please add.
 
 1. Prepare IP Address of IRKit.  
 1-1. Refer to the [IRKit WebSite](http://getirkit.com/#IRKit-Device-API) to get IP Address of IRKit. Then, set it into the "IP Address" in IRKit tag Setup screen.  
-![4.png](img/4.png)
+<img src="https://github.com/tetunori/MESH_SDK_IRKit_tag/raw/master/img/4.png" alt="4.png" height="200">  
 2. Learn IR Command.  
 2-1. Send an IR command to IRKit from your IR remote controller.  
 2-2. Connect any tag to the "Learn" Connector and trigger it.  
 Then, IRKit tag saves learned the IR code.  
-![2.png](img/2.png)
+<img src="https://github.com/tetunori/MESH_SDK_IRKit_tag/raw/master/img/2.png" alt="2.png" width="200">  
 3. Send IR command.  
 3-1. Connect any tag to the "Send" Connector and trigger it.  
 Then, IRKit tag requests IRKit to issue the IR code that is learned in 2-2.  
-![3.png](img/3.png)
+<img src="https://github.com/tetunori/MESH_SDK_IRKit_tag/raw/master/img/3.png" alt="3.png" width="200">  
 
 ## Author
 
