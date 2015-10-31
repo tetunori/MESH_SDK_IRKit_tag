@@ -2,12 +2,6 @@
 
 Exported Source of a MESH SDK IRKit Tag.
 
-## CAUTION!
-
-This tag does not support IRKit ver v3.0.0.gxxxxx or above yet.  
-I confirmed with IRKit ver 2.1.2.0.g424fa95.  
-I will update this tag and support latest IRkit version.
-
 ## Description
 
 By using this tag,
@@ -20,6 +14,11 @@ you can control IRKit on Sony MESH Canvas.
 
 - Learn Any IR command.
 - Send learnd IR command.
+
+## Supported IRKit version
+
+This tag supports IRKit ver v3.0.0.gxxxxx now.
+I confirmed with IRKit ver 3.0.0.0.g85190b1.  
 
 ## Requirement
 
