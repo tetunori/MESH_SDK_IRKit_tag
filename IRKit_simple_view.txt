@@ -101,6 +101,7 @@
                                     data.IRData = contents;
                                     callbackSuccess();
                                 },
+                                headers: {'X-Requested-With': 'curl'},
                                 error:function( request, errorMessage ) {
                                     log( "[IRKit] GET error." + errorMessage ) ;
                                     callbackError({});
@@ -118,6 +119,7 @@
                                     // log( "[IRKit] POST success." );
                                     callbackSuccess();
                                 },
+                                headers: {'X-Requested-With': 'curl'},
                                 error:function( request, errorMessage ) {
                                     log( "[IRKit] POST error." + errorMessage );
                                     callbackError({});
