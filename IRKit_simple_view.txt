@@ -10,7 +10,7 @@
         "functions": [
             {
                 "id": "function_0",
-                "name": "Learn &amp; Send",
+                "name": "Local",
                 "connector": {
                     "inputs": [
                         {
@@ -131,6 +131,189 @@
                             resultType:"pause"
                         }
                         ",
+                    "result": ""
+                }
+            },
+            {
+                "id": "function_1",
+                "name": "Internet",
+                "connector": {
+                    "inputs": [
+                        {
+                            "label": "Register"
+                        },
+                        {
+                            "label": "Learn"
+                        },
+                        {
+                            "label": "Send"
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "label": ""
+                        }
+                    ]
+                },
+                "properties": [
+                    {
+                        "name": "IP Address",
+                        "referenceName": "ip_addr",
+                        "type": "string",
+                        "defaultValue": "192.168.0.100"
+                    }
+                ],
+                "extension": {
+                    "initialize": "
+                        /* Runtime Values */
+                        
+                        // Definitions 
+                        var _IRKitTag_defines = new Array();
+                        _IRKitTag_defines.inputTypeRegister = 0;
+                        _IRKitTag_defines.inputTypeLearn = 1;
+                        _IRKitTag_defines.inputTypeSend = 2;
+                        
+                        // Register runtimeValues
+                        var _runtimeValues = { 
+                            IRData : "", 
+                            inputType : _IRKitTag_defines.inputTypeLearn,
+                            clienttoken : "",
+                            deviceid : "",
+                            clientkey : "",
+                            IRKitTag_defines : _IRKitTag_defines
+                        };
+                        
+                        return {
+                            runtimeValues : _runtimeValues
+                        }
+                        ",
+                    "receive": "
+                        /* For Connectors */
+                        
+                        // Save input type.
+                        if ( index == runtimeValues.IRKitTag_defines.inputTypeLearn ) {
+                            // input from "Learn" connector
+                            // log( "[IRKit] input from \"Learn\" connector" );
+                            runtimeValues.inputType = runtimeValues.IRKitTag_defines.inputTypeLearn;
+                        }else if ( index == runtimeValues.IRKitTag_defines.inputTypeSend ) {
+                            // input from "Send" connector
+                            // log( "[IRKit] input from \"Send\" connector" );
+                            runtimeValues.inputType = runtimeValues.IRKitTag_defines.inputTypeSend;
+                        }else if ( index == runtimeValues.IRKitTag_defines.inputTypeRegister ) {
+                            // input from "Register" connector
+                            // log( "[IRKit] input from \"Register\" connector" );
+                            runtimeValues.inputType = runtimeValues.IRKitTag_defines.inputTypeRegister;
+                        }else{
+                            // Illegal Input
+                            // log( "[IRKit] Illegal Input : index [" + index + "]" );    
+                        }
+                        
+                        ",
+                    "execute": "
+                        var irkit_ip_addr = properties.ip_addr;
+                        
+                        switch( runtimeValues.inputType ){
+                            default: // Fall through.
+                            case runtimeValues.IRKitTag_defines.inputTypeLearn:
+                                // log( "[IRKit] Learn method is specified." );
+                                learn_ir_data( irkit_ip_addr, runtimeValues );
+                                break;
+                            case runtimeValues.IRKitTag_defines.inputTypeRegister:
+                                // log( "[IRKit] Register method is specified." );
+                                register_for_internet_api( irkit_ip_addr, runtimeValues );
+                                break;
+                            case runtimeValues.IRKitTag_defines.inputTypeSend:
+                                // log( "[IRKit] Send method is specified" );
+                                if( runtimeValues.IRData != "" ){
+                                    send_ir_data( irkit_ip_addr, runtimeValues.IRData );
+                                }else{
+                                    log( "[IRKit] Since IR data is vacant, send request was ignored." );
+                                }
+                                break;
+                        }
+                        
+                        function learn_ir_data( ip_addr, data ){
+                            // GET 
+                            ajax({
+                                url:"https://api.getirkit.com/1/messages", 
+                                type:"get",
+                                data: {
+                                    clientkey: runtimeValues.clientkey,
+                                    clear: 1
+                                },
+                                success:function( contents ) {
+                                    // log( "[IRKit] GET success. contents is " + JSON.stringify( contents ) );
+                                    // log( "[IRKit] gotten IR data is " + JSON.stringify( contents.message ) );
+                                    data.IRData = contents.message;
+                                    callbackSuccess();
+                                },
+                                error:function( request, errorMessage ) {
+                                    log( "[IRKit] GET error." + errorMessage ) ;
+                                    callbackError({});
+                                }
+                            });
+                        }
+                        
+                        function send_ir_data( ip_addr, ir_data ){
+                            ajax({
+                                url:"https://api.getirkit.com/1/messages",
+                                type:"post",
+                                data: {
+                                    clientkey: runtimeValues.clientkey,
+                                    deviceid: runtimeValues.deviceid,
+                                    message: JSON.stringify( ir_data )
+                                },
+                                success:function( contents ) {
+                                    // log( "[IRKit] POST success." );
+                                    callbackSuccess();
+                                },
+                                error:function( request, errorMessage ) {
+                                    log( "[IRKit] POST error." + errorMessage );
+                                    callbackError({});
+                                }
+                            });
+                        }
+                        
+                        function register_for_internet_api( ip_addr, data ){
+                            ajax({
+                                url:"http://" + ip_addr + "/keys",
+                                data:'',
+                                type:"post",
+                        
+                                success:function( contents ) {
+                                    // log( "[IRKit] /keys POST success. response is " + contents );
+                                    // log( "[IRKit] clienttoken is " + JSON.parse(contents).clienttoken );
+                                    runtimeValues.clienttoken = JSON.parse(contents).clienttoken;
+                                    ajax({
+                                        url:"https://api.getirkit.com/1/keys",
+                                        data:'clienttoken=' + runtimeValues.clienttoken,
+                                        type:"post",
+                        
+                                        success:function( contents ) {
+                                            // log( "[IRKit] api.getirkit.com/1/keys POST success. response is " + JSON.stringify( contents ) );
+                                            // log( "[IRKit] deviceid is " + contents.deviceid );
+                                            runtimeValues.deviceid = contents.deviceid;
+                                            // log( "[IRKit] clientkey is " + contents.clientkey );
+                                            runtimeValues.clientkey = contents.clientkey;
+                                            callbackSuccess();
+                                        },
+                                        error:function( request, errorMessage ) {
+                                            log( "[IRKit] api.getirkit.com/1/keys POST error." + errorMessage );
+                                            callbackError({});
+                                        }
+                                    });
+                                },
+                                headers: {'X-Requested-With': 'curl'},
+                                error:function( request, errorMessage ) {
+                                    log( "[IRKit] /keys POST error." + errorMessage );
+                                    callbackError({});
+                                }
+                            });
+                        }
+                        
+                        return {
+                            resultType:"pause"
+                        }",
                     "result": ""
                 }
             }
